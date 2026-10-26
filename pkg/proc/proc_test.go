@@ -1905,6 +1905,23 @@ func TestPanicBreakpoint(t *testing.T) {
 	})
 }
 
+func TestPanicBreakpointNoDWARF(t *testing.T) {
+	// Go executables without debug info must still get the Go-specific
+	// breakpoints, which are set using the Go symbol table.
+	skipOn(t, "not working on windows", "windows")
+	ver, _ := goversion.Parse(runtime.Version())
+	if ver.Major > 0 && ver.AfterOrEqual(goversion.GoVersion{Major: 1, Minor: 22, Rev: -1}) {
+		skipOn(t, "not working on linux/arm64 with Go 1.22", "linux", "arm64")
+	}
+	withTestProcessArgs("panic", t, "", []string{}, protest.LinkStrip|protest.LinkDisableDWARF, func(p *proc.Target, grp *proc.TargetGroup, fixture protest.Fixture) {
+		assertNoError(grp.Continue(), t, "Continue()")
+		bp := p.CurrentThread().Breakpoint()
+		if bp.Breakpoint == nil || bp.Logical.Name != proc.UnrecoveredPanic {
+			t.Fatalf("not on unrecovered-panic breakpoint: %v", bp)
+		}
+	})
+}
+
 func TestCmdLineArgs(t *testing.T) {
 	expectSuccess := func(p *proc.Target, grp *proc.TargetGroup, fixture protest.Fixture) {
 		err := grp.Continue()
@@ -6405,8 +6422,15 @@ func TestNonGoBinaryWithGoDlopenAttach(t *testing.T) {
 		t.Fatalf("failed to build C binary: %v\n%s", err, out)
 	}
 
-	// libresolv is not loaded by the host nor by the Go runtime.
-	cmd = exec.Command(cBinPath, goSoPath, "libresolv.so.2")
+	otherSoPath := filepath.Join(tmpdir, "otherlib.so")
+	otherSrcPath := filepath.Join(fixturesDir, "godlopenattach", "otherlib.c")
+	cmd = exec.Command("cc", "-shared", "-fPIC", "-o", otherSoPath, otherSrcPath)
+	out, err = cmd.CombinedOutput()
+	if err != nil {
+		t.Fatalf("failed to build C shared object: %v\n%s", err, out)
+	}
+
+	cmd = exec.Command(cBinPath, goSoPath, otherSoPath)
 	stdin, err := cmd.StdinPipe()
 	assertNoError(err, t, "StdinPipe")
 	stdout, err := cmd.StdoutPipe()

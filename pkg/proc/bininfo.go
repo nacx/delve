@@ -2338,6 +2338,7 @@ func loadBinaryInfoMacho(bi *BinaryInfo, image *Image, path string, entryPoint u
 		if err != nil {
 			return fmt.Errorf("could not read debug info (%v) and could not read go symbol table (%v)", dwerr, err)
 		}
+		image.IsGo = true
 		return nil
 	}
 	loadBinaryInfoGoRuntimeSymTableMacho(image, path, exe)
