@@ -32,10 +32,10 @@ Tests skipped by each supported backend:
 	* 1 broken in linux ppc64le
 * linux/ppc64le/native/pie skipped = 3
 	* 3 broken - pie mode
-* linux/riscv64 skipped = 4
+* linux/riscv64 skipped = 5
 	* 1 broken
 	* 1 not implemented
-	* 2 not working on linux/riscv64
+	* 3 not working on linux/riscv64
 * loong64 skipped = 7
 	* 1 broken - global variable symbolication
 	* 6 not implemented

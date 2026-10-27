@@ -1910,6 +1910,7 @@ func TestPanicBreakpointNoDWARF(t *testing.T) {
 	// breakpoints, which are set using the Go symbol table.
 	skipOn(t, "not working on windows", "windows")
 	skipOn(t, "not working on linux/386", "linux", "386")
+	skipOn(t, "not working on linux/riscv64", "linux", "riscv64")
 	withTestProcessArgs("panic", t, "", []string{}, protest.LinkStrip|protest.LinkDisableDWARF, func(p *proc.Target, grp *proc.TargetGroup, fixture protest.Fixture) {
 		assertNoError(grp.Continue(), t, "Continue()")
 		bp := p.CurrentThread().Breakpoint()
