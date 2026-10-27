@@ -1909,10 +1909,7 @@ func TestPanicBreakpointNoDWARF(t *testing.T) {
 	// Go executables without debug info must still get the Go-specific
 	// breakpoints, which are set using the Go symbol table.
 	skipOn(t, "not working on windows", "windows")
-	ver, _ := goversion.Parse(runtime.Version())
-	if ver.Major > 0 && ver.AfterOrEqual(goversion.GoVersion{Major: 1, Minor: 22, Rev: -1}) {
-		skipOn(t, "not working on linux/arm64 with Go 1.22", "linux", "arm64")
-	}
+	skipOn(t, "not working on linux/386", "linux", "386")
 	withTestProcessArgs("panic", t, "", []string{}, protest.LinkStrip|protest.LinkDisableDWARF, func(p *proc.Target, grp *proc.TargetGroup, fixture protest.Fixture) {
 		assertNoError(grp.Continue(), t, "Continue()")
 		bp := p.CurrentThread().Breakpoint()

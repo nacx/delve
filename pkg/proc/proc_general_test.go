@@ -366,3 +366,19 @@ func TestGoImageIndex(t *testing.T) {
 		assertGoImage(t, bi, 1)
 	})
 }
+
+func TestParseModuleDataAtEndOfSection(t *testing.T) {
+	// The moduledata struct can be close to the end of .noptrdata, closer than
+	// the number of bytes parseModuleData returns.
+	const tableAddr = 0x4a1b2c3d
+	data := make([]byte, 0x100)
+	off := len(data) - 0x20
+	data[off], data[off+1], data[off+2], data[off+3] = 0x3d, 0x2c, 0x1b, 0x4a
+	md, err := parseModuleData(data, tableAddr)
+	if err != nil {
+		t.Fatalf("parseModuleData: %v", err)
+	}
+	if len(md) != 0x20 {
+		t.Errorf("expected the moduledata to extend to the end of the section (%#x bytes), got %#x bytes", 0x20, len(md))
+	}
+}

@@ -1955,7 +1955,7 @@ func parseModuleData(dataSection []byte, tableAddr uint64) ([]byte, error) {
 	if off == -1 {
 		return nil, errors.New("could not find moduledata")
 	}
-	return dataSection[off : off+0x300], nil
+	return dataSection[off:min(off+0x300, len(dataSection))], nil
 }
 
 // _STT_FUNC is a code object, see /usr/include/elf.h for a full definition.
